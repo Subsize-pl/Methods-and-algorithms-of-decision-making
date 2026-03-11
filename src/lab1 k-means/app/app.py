@@ -15,6 +15,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+# Class of interactive GUI app to visualize K-means clustering in 2D
 class KMeansApp:
 
     def __init__(self, state: KMeansState, interval: int, max_iter: int) -> None:
@@ -25,18 +26,27 @@ class KMeansApp:
         self.anim: Optional[FuncAnimation] = None
         self.paused: bool = True
 
+        # fig - figure object, the canvas where all plot elements are drawn
+        # ax - the axes object, the coordinate system where points, lines, text, etc. are drawn
+        # figsize=(8, 6) sets the figure size in inches (width, height)
         self.fig, self.ax = plt.subplots(figsize=(8, 6))
+
+        # Adjust the bottom margin to leave space for the button so it doesn't overlap the plot
         plt.subplots_adjust(bottom=0.18)
 
         self.scat = self.ax.scatter(
-            self.state.data[:, 0], self.state.data[:, 1], s=10, alpha=0.6
+            self.state.data[:, 0],  # takes all X of points
+            self.state.data[:, 1],  # takes all Y of points
+            s=10,  # point size
+            alpha=0.6,  # transparency
         )
+
         self.centroid_scat = self.ax.scatter(
             self.state.centroids[:, 0],
             self.state.centroids[:, 1],
             s=180,
-            marker="X",
-            edgecolor="k",
+            marker="X",  # marker shape: cross (X)
+            edgecolor="k",  # marker edge color: black
         )
         self.ax.set_title("Initial state (press Start)")
 
@@ -45,8 +55,12 @@ class KMeansApp:
         self.btn.on_clicked(self._on_button)
 
     def _render(self) -> None:
+        # Associates each color of a point with its placemark
         self.scat.set_array(self.state.labels)
+
+        # Updates centroids coordinates
         self.centroid_scat.set_offsets(self.state.centroids)
+
         try:
             self.fig.canvas.draw_idle()
         except Exception:
@@ -96,18 +110,21 @@ class KMeansApp:
         )
 
     def _on_button(self, event) -> None:
+
+        # If K-means has already converged, do nothing
         if self.state.converged:
             return
 
         if self.anim is None:
-            logger.info("Start pressed — animation are creating ")
+            logger.info("Start pressed — creating animation")
             self.anim = FuncAnimation(
-                self.fig,
-                self._step,
-                interval=self.interval,
-                repeat=False,
-                blit=False,
+                self.fig,  # figure to update
+                self._step,  # function called at each frame (one K-means iteration)
+                interval=self.interval,  # delay between frames in milliseconds
+                repeat=False,  # do not loop the animation
+                blit=False,  # redraw the entire canvas each frame (simpler and more reliable)
             )
+
             try:
                 self.fig.canvas.draw_idle()
             except Exception:
@@ -115,15 +132,19 @@ class KMeansApp:
                     self.fig.canvas.draw()
                 except Exception as e:
                     logger.exception(f"Drawing exception {e}")
+
             try:
                 self.anim.event_source.start()
             except Exception as e:
                 logger.exception(f"Event starting exception {e}")
+
             self.paused = False
             self.btn.label.set_text("Pause")
             return
 
+        # Toggle Pause / Resume
         if self.paused:
+            # Resume animation
             try:
                 self.anim.event_source.start()
             except Exception as e:
@@ -131,6 +152,7 @@ class KMeansApp:
             self.btn.label.set_text("Pause")
             self.paused = False
         else:
+            # Pause animation
             try:
                 self.anim.event_source.stop()
             except Exception as e:
@@ -138,6 +160,7 @@ class KMeansApp:
             self.btn.label.set_text("Resume")
             self.paused = True
 
+        # Safe redraw after any change
         try:
             self.fig.canvas.draw_idle()
         except Exception as e:

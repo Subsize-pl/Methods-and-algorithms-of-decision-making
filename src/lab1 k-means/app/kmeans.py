@@ -1,10 +1,16 @@
 import numpy as np
 
 
+# Object that stores the current state of the Lloyd algorithm
 class KMeansState:
     def __init__(
-        self, data: np.ndarray, k: int, rng: np.random.Generator | None = None
+        self,
+        data: np.ndarray,
+        k: int,
+        rng: np.random.Generator | None = None,
     ):
+        # ndim = number of array dimensions. Must be 2 (plane)
+        # data.shape[1] = coordinates count. Must be 2 (x, y)
         if data.ndim != 2 or data.shape[1] != 2:
             raise ValueError("data must be shape (n,2)")
         if k <= 0:
@@ -14,20 +20,32 @@ class KMeansState:
         self.n, self.dim = data.shape
         self.k = k
         self.rng = rng or np.random.default_rng()
+
+        # Select k random points
         self.centroids: np.ndarray = self._init_centroids()
+
+        # Arr that stores the cluster number for each point.
         self.labels: np.ndarray = np.zeros(self.n, dtype=int)
         self.iteration: int = 0
         self.converged: bool = False
 
     def _init_centroids(self) -> np.ndarray:
+        # Randomly select k unique indices from the range [0, n)
         idx = self.rng.choice(self.n, size=self.k, replace=False)
         return self.data[idx].astype(float).copy()
 
     def assign(self) -> None:
+        # Compute Euclidean distance from every point to every centroid.
+        # data[:, None, :]      -> shape (n_points, 1, dim)
+        # centroids[None, :, :] -> shape (1, k, dim)
+        # Broadcasting produces (n_points, k, dim) pairwise coordinate differences.
         dists = np.linalg.norm(
             self.data[:, None, :] - self.centroids[None, :, :],
             axis=2,
         )
+
+        # For each point select the index of the nearest centroid.
+        # Result: labels array of shape (n_points,)
         self.labels = np.argmin(dists, axis=1)
 
     def update(self) -> tuple[np.ndarray, list]:
