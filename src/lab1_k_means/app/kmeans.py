@@ -1,8 +1,25 @@
 import numpy as np
 
 
-# Object that stores the current state of the Lloyd algorithm
 class KMeansState:
+    """
+    K-Means clustering (Lloyd's algorithm) for 2D data.
+
+    Algorithm steps:
+    1. Randomly select k points from the dataset as initial centroids.
+    2. Assign each data point to the nearest centroid (Euclidean distance).
+    3. For each cluster compute the new centroid as the mean of all its points.
+    4. If a cluster becomes empty, optionally reinitialize its centroid
+       with a random data point.
+    5. Compute how much centroids moved compared to the previous iteration.
+    6. If the maximum centroid shift is less than a tolerance threshold,
+       the algorithm converges and stops.
+    7. Otherwise repeat from step 2.
+
+    The result is a partition of the dataset into k clusters
+    minimizing the within-cluster sum of squared distances (inertia).
+    """
+
     def __init__(
         self,
         data: np.ndarray,

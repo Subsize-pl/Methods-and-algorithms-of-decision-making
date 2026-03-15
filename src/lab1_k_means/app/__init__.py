@@ -1,9 +1,8 @@
 __all__ = (
     "KMeansApp",
-    "DataGenerator",
     "KMeansState",
 )
 
 from .app import KMeansApp
-from .data_generator import DataGenerator
+from common.data_generators.random_generator import RandomDataGenerator
 from .kmeans import KMeansState

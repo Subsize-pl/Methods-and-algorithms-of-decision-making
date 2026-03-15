@@ -4,12 +4,13 @@ import logging
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Button
+
+from common.config import LogSettings
 from .kmeans import KMeansState
-from .settings import LoggingSettings
 
 logging.basicConfig(
-    level=LoggingSettings.LEVEL,
-    format=LoggingSettings.FORMAT,
+    level=LogSettings.LEVEL,
+    format=LogSettings.FORMAT,
 )
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,9 @@ logger = logging.getLogger(__name__)
 # Class of interactive GUI app to visualize K-means clustering in 2D
 class KMeansApp:
 
-    def __init__(self, state: KMeansState, interval: int, max_iter: int) -> None:
+    def __init__(
+        self, state: KMeansState, interval: int = 150, max_iter: int = 200
+    ) -> None:
         self.state = state
         self.interval = interval
         self.max_iter = max_iter
