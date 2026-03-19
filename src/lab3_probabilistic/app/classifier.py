@@ -80,19 +80,19 @@ class ProbabilisticClassifier1D:
             if label == 1:
                 # region classified as class 1
                 # error here = how much class 2 falls into this region
-                false_alarm += (
+                false_alarm += self.p2 * (
                     gaussian_cdf(np.array([b]), self.mu2, self.s2)[0]
                     - gaussian_cdf(np.array([a]), self.mu2, self.s2)[0]
                 )
             else:
                 # region classified as class 2
                 # error here = how much class 1 falls into this region
-                miss += (
+                miss += self.p1 * (
                     gaussian_cdf(np.array([b]), self.mu1, self.s1)[0]
                     - gaussian_cdf(np.array([a]), self.mu1, self.s1)[0]
                 )
 
         # weighted total error (using priors)
-        total_error = self.p1 * miss + self.p2 * false_alarm
+        total_error = miss + false_alarm
 
         return float(false_alarm), float(miss), float(total_error)
